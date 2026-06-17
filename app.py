@@ -1,3 +1,9 @@
+# ==========================================
+# Tool Name: Crypt-hub (Advanced Security Suite)
+# Author: [SkyData]
+# Copyright (c) 2026 [SkyData]
+# This code is open-source. Attribution is strictly required!
+# ==========================================
 import os
 import subprocess
 import uuid
