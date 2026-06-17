@@ -9,7 +9,7 @@
 ## 👨‍💻 Author & Copyright
 **Created by:** [SkyData]  
 **Copyright:** © 2026 [SkyData]. All rights reserved.  
-**Attribution Requirement:** You are free to use, modify, and distribute this software, but **you must explicitly credit the original author ([ضع اسمك هنا])** and include the original license in any copies or forks.
+**Attribution Requirement:** You are free to use, modify, and distribute this software, but **you must explicitly credit the original author ([SkyData])** and include the original license in any copies or forks.
 
 ---
 
