@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Security Suite | Pro Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+            --input-bg: #0f172a;
+            --border-color: #334155;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-container { flex: 1; padding: 40px 0; }
+
+        /* Card Styling */
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* Top Navigation Split */
+        .nav-split {
+            display: flex;
+            justify-content: space-between;
+            background: #0b1120;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-btn {
+            flex: 0 0 48%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .nav-btn.active-left {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .nav-btn.active-right {
+            background: linear-gradient(135deg, var(--danger), #b91c1c);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .tab-content { display: none; padding: 30px; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Inputs & Selects (No Browser Default) */
+        .form-control, .form-select {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #1e293b;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            color: white;
+        }
+
+        /* Custom Select Arrow */
+        select.form-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        /* Help Tooltips (?) */
+        .label-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .form-label { margin: 0; font-weight: 600; color: #cbd5e1; }
+        
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--border-color);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .help-icon:hover { background: var(--primary); color: white; }
+
+        .help-popup {
+            display: none;
+            position: absolute;
+            top: 30px;
+            left: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 12px;
+            width: 280px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+
+        .show-more-btn {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: block;
+            margin-top: 5px;
+        }
+        .show-more-btn:hover { text-decoration: underline; }
+        
+        .detailed-text {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        /* Buttons */
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-generate { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; }
+        .btn-encrypt { background: linear-gradient(135deg, var(--danger), #991b1b); color: white; }
+        .btn-decrypt { background: linear-gradient(135deg, var(--success), #047857); color: white; }
+        .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        /* Footer */
+        .footer { text-align: center; padding: 20px; background: #0b1120; border-top: 1px solid var(--border-color); }
+        .btn-terms {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .btn-terms:hover { background: var(--primary); color: white; }
+
+        /* Modal Styling */
+        .modal-content { background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); }
+        .modal-header { border-bottom: 1px solid var(--border-color); }
+        .modal-footer { border-top: 1px solid var(--border-color); }
+        .text-warning-custom { color: #fbbf24; }
+    </style>
+</head>
+<body>
+
+<div class="main-container container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="glass-card">
+                
+                <!-- Navigation Split -->
+                <div class="nav-split">
+                    <button class="nav-btn active-left" id="btn-key" onclick="switchTab('key')">
+                        🔑 Keystore Generator
+                    </button>
+                    <button class="nav-btn" id="btn-crypto" onclick="switchTab('crypto')">
+                        🛡️ Quantum File Vault
+                    </button>
+                </div>
+
+                <!-- KEY GENERATOR TAB -->
+                <div id="tab-key" class="tab-content active">
+                    <form action="/generate-key" method="POST">
+                        <div class="row g-4">
+                            <!-- Store Type -->
+                            <div class="col-md-4">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Store Type</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>The format of the keystore file.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">PKCS12 is the modern industry standard. JKS is older. BKS/BCFKS/UBER use Bouncy Castle libraries for specialized high-security environments.</div>
+                                    </div>
+                                </div>
+                                <select class="form-select" name="storetype">
+                                    <option value="PKCS12" selected>PKCS12 (Recommended)</option>
+                                    <option value="JKS">JKS (Legacy)</option>
+                                    <option value="JCEKS">JCEKS</option>
+                                    <option value="BKS">BKS (Bouncy Castle)</option>
+                                    <option value="BCFKS">BCFKS (Bouncy Castle)</option>
+                                    <option value="UBER">UBER (Bouncy Castle)</option>
+                                </select>
+                            </div>
+
+                            <!-- Key Algorithm -->
+                            <div class="col-md-4">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Key Algorithm</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>The mathematical algorithm used to generate the key.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">RSA is the most widely supported. EC (Elliptic Curve) provides high security with smaller key sizes. DSA is older and less common now.</div>
+                                    </div>
+                                </div>
+                                <select class="form-select" name="keyalg">
+                                    <option value="RSA" selected>RSA</option>
+                                    <option value="EC">EC (Elliptic Curve)</option>
+                                    <option value="DSA">DSA</option>
+                                </select>
+                            </div>
+
+                            <!-- Signature Algorithm -->
+                            <div class="col-md-4">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Signature Algorithm</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>Defines how the fingerprint (SHA hash) is generated.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">This determines the cryptographic hash function. SHA256withRSA is standard for Android. The tool will automatically extract and provide your unique SHA-1 and SHA-256 fingerprints in a text file.</div>
+                                    </div>
+                                </div>
+                                <select class="form-select" name="sigalg">
+                                    <option value="SHA256withRSA" selected>SHA256 with RSA</option>
+                                    <option value="SHA512withRSA">SHA512 with RSA</option>
+                                    <option value="SHA256withECDSA">SHA256 with ECDSA</option>
+                                </select>
+                            </div>
+
+                            <!-- Key Size -->
+                            <div class="col-md-4">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Key Size</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>The length of the cryptographic key in bits.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">2048 bits is the standard for RSA and is highly secure. 4096 bits offers extreme security but might be slightly slower to process.</div>
+                                    </div>
+                                </div>
+                                <select class="form-select" name="keysize">
+                                    <option value="2048" selected>2048 Bits</option>
+                                    <option value="4096">4096 Bits</option>
+                                </select>
+                            </div>
+
+                            <!-- Alias -->
+                            <div class="col-md-4">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Alias</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>A name to identify this specific key inside the keystore.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">A keystore can hold multiple keys. The alias is the unique name for this specific key (e.g., 'my_app_key'). You will need this name when signing your app.</div>
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" name="alias" value="upload" required>
+                            </div>
+
+                            <!-- Validity -->
+                            <div class="col-md-4">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Validity (Days)</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>How long the key remains valid.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">Google Play requires keys to be valid for at least 25 years. 10000 days is approximately 27 years, which is the recommended standard.</div>
+                                    </div>
+                                </div>
+                                <input type="number" class="form-control" name="validity" value="10000" required>
+                            </div>
+
+                            <!-- Passwords -->
+                            <div class="col-md-6">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Store Password</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>Password to open the keystore file.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">Must be at least 6 characters. If you lose this, you cannot sign updates for your app. Keep it safe!</div>
+                                    </div>
+                                </div>
+                                <input type="password" class="form-control" name="storepass" minlength="6" required>
+                            </div>
+
+                            <!-- Developer Details -->
+                            <div class="col-12 mt-4"><h5 style="color: var(--primary);">Certificate Details (DName)</h5></div>
+                            
+                            <div class="col-md-6">
+                                <div class="label-wrapper"><label class="form-label">Full Name (CN)</label><span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                <div class="help-popup"><span>Developer or App Name.</span><a class="show-more-btn" onclick="toggleMore(this)">Show more...</a><div class="detailed-text">Common Name. Usually your full name or your company's name.</div></div></div>
+                                <input type="text" class="form-control" name="cn" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="label-wrapper"><label class="form-label">Organization Unit (OU)</label><span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                <div class="help-popup"><span>Your department.</span><a class="show-more-btn" onclick="toggleMore(this)">Show more...</a><div class="detailed-text">E.g., 'Mobile Development' or 'IT'.</div></div></div>
+                                <input type="text" class="form-control" name="ou" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="label-wrapper"><label class="form-label">Organization (O)</label><span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                <div class="help-popup"><span>Company Name.</span><a class="show-more-btn" onclick="toggleMore(this)">Show more...</a><div class="detailed-text">The legal name of your company or organization.</div></div></div>
+                                <input type="text" class="form-control" name="o" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="label-wrapper"><label class="form-label">Country Code (C)</label><span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                <div class="help-popup"><span>2-letter country code.</span><a class="show-more-btn" onclick="toggleMore(this)">Show more...</a><div class="detailed-text">Must be exactly two letters (e.g., US for United States, DZ for Algeria, UK for United Kingdom).</div></div></div>
+                                <input type="text" class="form-control" name="c" maxlength="2" required>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn-submit btn-generate">Generate & Download Secure ZIP</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- CRYPTO VAULT TAB -->
+                <div id="tab-crypto" class="tab-content">
+                    <form action="/crypto" method="POST" enctype="multipart/form-data">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Select File to Encrypt/Decrypt</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>Upload any file up to 50MB.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">You can upload images, documents, or archives. The file is processed entirely in memory and deleted instantly after the operation. Max limit is 50MB per request.</div>
+                                    </div>
+                                </div>
+                                <input class="form-control" type="file" name="file" required>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="label-wrapper">
+                                    <label class="form-label">Master Password</label>
+                                    <span class="help-icon" onclick="toggleHelp(this)">?</span>
+                                    <div class="help-popup">
+                                        <span>The key to lock/unlock your file.</span>
+                                        <a class="show-more-btn" onclick="toggleMore(this)">Show more...</a>
+                                        <div class="detailed-text">We use Argon2id to derive a quantum-resistant key from this password. <b>WARNING:</b> If you forget this password, your file is permanently lost. There is no recovery mechanism.</div>
+                                    </div>
+                                </div>
+                                <input type="password" class="form-control" name="password" required placeholder="Enter a highly secure passphrase">
+                            </div>
+
+                            <div class="col-md-6 mt-5">
+                                <button type="submit" name="action" value="encrypt" class="btn-submit btn-encrypt">🔒 Encrypt File</button>
+                            </div>
+                            <div class="col-md-6 mt-5">
+                                <button type="submit" name="action" value="decrypt" class="btn-submit btn-decrypt">🔓 Decrypt File</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer with Terms -->
+<div class="footer">
+    <button class="btn-terms" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service and Privacy Policy</button>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary">Terms of Service & Privacy Policy</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="line-height: 1.8;">
+                <h6 class="text-success">🌟 Premium Tools, Free & Open Source</h6>
+                <p>We believe in digital security for everyone. We provide these premium, highly advanced cryptographic tools completely free of charge and open-source for the community.</p>
+
+                <hr class="border-secondary">
+
+                <h6 class="text-primary">🛠️ How The Tools Work</h6>
+                <p><b>1. Keystore Generator:</b> Uses native Java <code>keytool</code> integrated with Bouncy Castle libraries to generate industry-standard and specialized cryptographic keys (APK/AAB signing). It automatically extracts your unique SHA fingerprints.</p>
+                <p><b>2. Quantum File Vault:</b> Uses a military-grade Cascade Encryption architecture. Your password is hashed using <b>Argon2id</b> (GPU/ASIC resistant). The file is then encrypted using <b>AES-256-GCM</b> (Layer 1) and wrapped again in <b>ChaCha20-Poly1305</b> (Layer 2). This makes brute-forcing or quantum-computing attacks practically impossible.</p>
+
+                <hr class="border-secondary">
+
+                <h6 class="text-info">🔒 Privacy & Zero-Trace Policy</h6>
+                <p>Your privacy is absolute. While files are temporarily uploaded to <b>Hugging Face servers</b> to be processed, they exist only in volatile memory (RAM) or temporary storage. <b>Every file is permanently deleted the exact millisecond your download begins.</b> We do not keep logs, we do not save passwords, and no third party has access to your data.</p>
+                <p>For more details on server infrastructure privacy, please read the <a href="https://huggingface.co/privacy" target="_blank" class="text-primary">Hugging Face Official Privacy Policy</a>.</p>
+
+                <hr class="border-secondary">
+
+                <h6 class="text-warning-custom">⚠️ CRITICAL SECURITY WARNINGS (MUST READ)</h6>
+                <ul>
+                    <li><b>Lost Passwords:</b> We do NOT store your passwords. If you encrypt a file and lose the password, <b>you will lose access to the file forever.</b> Not even the creators of this tool can recover it.</li>
+                    <li><b>Backup Your Files:</b> Always keep a backup of your original file until you have successfully verified that you can decrypt the locked version with your password.</li>
+                    <li><b>Tampering Protection:</b> If a hacker or malicious software alters even a single byte of your encrypted (<code>.locked</code>) file, the decryption will immediately fail. This is due to the GCM/Poly1305 MAC (Message Authentication Code) which ensures data integrity.</li>
+                </ul>
+                
+                <p>By using this tool, you agree to use it responsibly and acknowledge that you are solely responsible for managing your passwords and file backups.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">I Understand & Agree</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Tab Switching Logic
+    function switchTab(tab) {
+        document.getElementById('tab-key').classList.remove('active');
+        document.getElementById('tab-crypto').classList.remove('active');
+        document.getElementById('btn-key').classList.remove('active-left');
+        document.getElementById('btn-crypto').classList.remove('active-right');
+
+        if(tab === 'key') {
+            document.getElementById('tab-key').classList.add('active');
+            document.getElementById('btn-key').classList.add('active-left');
+        } else {
+            document.getElementById('tab-crypto').classList.add('active');
+            document.getElementById('btn-crypto').classList.add('active-right');
+        }
+    }
+
+    // Help Popup Logic
+    function toggleHelp(element) {
+        // Close all other popups first
+        document.querySelectorAll('.help-popup').forEach(p => {
+            if (p !== element.nextElementSibling) p.style.display = 'none';
+        });
+
+        const popup = element.nextElementSibling;
+        if (popup.style.display === 'block') {
+            popup.style.display = 'none';
+        } else {
+            popup.style.display = 'block';
+        }
+    }
+
+    // Show More Logic
+    function toggleMore(element) {
+        const detailedText = element.nextElementSibling;
+        if (detailedText.style.display === 'block') {
+            detailedText.style.display = 'none';
+            element.innerText = 'Show more...';
+        } else {
+            detailedText.style.display = 'block';
+            element.innerText = 'Show less';
+        }
+    }
+
+    // Close popups when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.classList.contains('help-icon') && !event.target.closest('.help-popup')) {
+            document.querySelectorAll('.help-popup').forEach(p => p.style.display = 'none');
+        }
+    });
+</script>
+</body>
+</html>
