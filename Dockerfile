@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-# تثبيت Java و wget
+# تثبيت متطلبات النظام الأساسية وجافا لدعم Keystore
 RUN apt-get update && \
     apt-get install -y default-jdk wget && \
     apt-get clean && \
@@ -13,7 +13,7 @@ ENV HOME=/home/user \
 
 WORKDIR $HOME/app
 
-# تحميل مكتبة Bouncy Castle لدعم صيغ BKS و BCFKS
+# تنزيل مكتبة Bouncy Castle المتوافقة
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.jar -O $HOME/bcprov.jar
 
 COPY --chown=user requirements.txt .
@@ -21,8 +21,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=user . .
 
-RUN mkdir -p $HOME/app/temp_files
+RUN mkdir -p /tmp/fortress_temp
 
 EXPOSE 7860
 
-CMD ["gunicorn", "-b", "0.0.0.0:7860", "--workers", "4", "--threads", "2", "--timeout", "120", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:7860", "--workers", "2", "--threads", "4", "--timeout", "180", "app:app"]
